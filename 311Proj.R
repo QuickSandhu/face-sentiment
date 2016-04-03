@@ -5,10 +5,14 @@ x<- list.files(path ="jaffe")
 df <- data.frame()
 
 #load all collapsed data into a data frame
+#load all collapsed data into a data frame
 for(i in 1:length(x)){
- y<-(as.data.frame(readTIFF(paste("jaffe/",trim(x[i]),sep=""))))
- z<-unlist(y)
- df <- rbind(df,z)
+  y<-readTIFF(paste("jaffe/",x[i],sep=""))
+  if (length(dim(y)) > 2){
+    y <- y[,,1]
+  }
+  z<-as.list(y)
+  df <- rbind(df,z)
 }
 
 #choose k=7 as we know the number of groups
