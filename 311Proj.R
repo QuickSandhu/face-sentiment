@@ -1,5 +1,7 @@
 library("tiff")
 library("cluster")
+library("randomForest")
+library("graphics")
 
 X<- as.data.frame(list.files(path ="jaffe"))
 df <- data.frame()
@@ -10,9 +12,14 @@ columnshift <- function(x){
   if (length(dim(y)) > 2){
     y <- y[,,1]
   }
+  #reduce background noise by croping left/right margins
+  y<-y[,-1:-45]
+  y<-y[,-166:-211]
+  
+  #make Y a dataframe
   y <- as.data.frame(y)
-  z <- unlist(y)
-  z <- append(z, c(substring(x,4,5)), 0)
+  z <- unlist(y) # make y into a single list
+  z <- append(z, c(substring(x,4,5)), 0) # append classification
   return(z)
 }
 
@@ -38,3 +45,7 @@ aCut <- cutree(aLink, k=7)
 plot(cCut)
 plot(sCut)
 plot(aCut)
+
+faceforest <-  randomForest(V1~., data=df[-1:-212,], importance=TRUE)
+
+
