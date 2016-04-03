@@ -4,7 +4,6 @@ library("cluster")
 X<- as.data.frame(list.files(path ="jaffe"))
 df <- data.frame()
 
-
 #collapses a dataframe into a column
 columnshift <- function(x){
   y<-(readTIFF(paste("jaffe/",x,sep="")))
@@ -12,13 +11,13 @@ columnshift <- function(x){
     y <- y[,,1]
   }
   y <- as.data.frame(y)
-  z <- unist(y)
+  z <- unlist(y)
+  z <- append(z, c(substring(x,4,5)), 0)
   return(z)
 }
 
 #load all collapsed data into a data frame
 df<-as.data.frame(t(data.frame(apply(X,1, columnshift))))
-
 
 #choose k=7 as we know the number of groups
 km <- kmeans(df, 5)
