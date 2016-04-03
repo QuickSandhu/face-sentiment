@@ -1,22 +1,27 @@
 library("tiff")
 library("cluster")
 
-x<- list.files(path ="jaffe")
+X<- as.data.frame(list.files(path ="jaffe"))
 df <- data.frame()
 
-#load all collapsed data into a data frame
-#load all collapsed data into a data frame
-for(i in 1:length(x)){
-  y<-readTIFF(paste("jaffe/",x[i],sep=""))
+
+#collapses a dataframe into a column
+columnshift <- function(x){
+  y<-(readTIFF(paste("jaffe/",x,sep="")))
   if (length(dim(y)) > 2){
     y <- y[,,1]
   }
-  z<-as.list(y)
-  df <- rbind(df,z)
+  y <- as.data.frame(y)
+  z <- unist(y)
+  return(z)
 }
 
+#load all collapsed data into a data frame
+df<-as.data.frame(t(data.frame(apply(X,1, columnshift))))
+
+
 #choose k=7 as we know the number of groups
-km <- kmeans(df,7)
+km <- kmeans(df, 5)
 clusplot(df,km$cluster, color = TRUE, shade= TRUE)
 
 cLink <- hclust(dist(df), method="complete")
