@@ -1,18 +1,33 @@
 library("tiff")
 library("cluster")
+library("randomForest")
+library("graphics")
 
-x<- list.files(path ="jaffe")
+X<- as.data.frame(list.files(path ="jaffe"))
 df <- data.frame()
 
-#load all collapsed data into a data frame
-for(i in 1:length(x)){
- y<-(as.data.frame(readTIFF(paste("jaffe/",trim(x[i]),sep=""))))
- z<-unlist(y)
- df <- rbind(df,z)
+#collapses a dataframe into a column
+columnshift <- function(x){
+  y<-(readTIFF(paste("jaffe/",x,sep="")))
+  if (length(dim(y)) > 2){
+    y <- y[,,1]
+  }
+  #reduce background noise by croping left/right margins
+  y<-y[,-1:-45]
+  y<-y[,-166:-211]
+  
+  #make Y a dataframe
+  y <- as.data.frame(y)
+  z <- unlist(y) # make y into a single list
+  z <- append(z, c(substring(x,4,5)), 0) # append classification
+  return(z)
 }
 
+#load all collapsed data into a data frame
+df<-as.data.frame(t(data.frame(apply(X,1, columnshift))))
+
 #choose k=7 as we know the number of groups
-km <- kmeans(df,7)
+km <- kmeans(df, 5)
 clusplot(df,km$cluster, color = TRUE, shade= TRUE)
 
 cLink <- hclust(dist(df), method="complete")
@@ -30,3 +45,7 @@ aCut <- cutree(aLink, k=7)
 plot(cCut)
 plot(sCut)
 plot(aCut)
+
+faceforest <-  randomForest(V1~., data=df[-1:-212,], importance=TRUE)
+
+
